@@ -1,0 +1,17 @@
+!/bin/bash
+article = https://www.ynetnews.com/category/3082/article/
+list = $(wget https://www.ynetnews.com/category/3082 | grep article/+)
+list_uniq= cat list | sort | uniq
+article_amount = $(cat list_uniq | wc -l)
+for article in list_uniq; do
+	count_N = $(wget file | grep "Netanyahu" * | wc -w)
+	count_G = $(wget file | grep "Gantz" * | wc -w)
+	count_B = $(wget file | grep "Bennett" * | wc -w)
+	count_P = $(wget file | grep "Peretz" * | wc -w)
+	is_empty = [[ $count_N -eq 0 ]] && [[ $count_G -eq 0 ]]
+	&& [[ $count_B -eq 0 ]] && [[ $count_P -eq 0 ]]
+	[[ $is_empty ]] && echo -e $(article) - '\n' > results.csv 
+	[[ !$is_empty ]] && echo -e $(article), Netanyahu $(count_N), Gantz $(count_G), 
+		Bennett $(count_B), Peretz $(count_P) '\n' > results.csv 
+done
+
