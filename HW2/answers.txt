@@ -1,0 +1,18 @@
+1. we have copied the part that checks if the data that the user put in is valid, between all of the .c files. that is very unnecessary.
+we could have make it better if we would have made a "global function" that checks if the data is valid and call the function in each of the .c codes.
+2.By definition - A continuous uniform distribution is a continuous distribution in which all segments of the same length, located in its support, have equal probability.
+so, allegedly,There is no preference for one number to be randomly selected more than the other.
+to ensure it is true, we randomly selected (using the random function) 5000 numbers.
+than, we created histogram using these random numbers.
+and the results are:
+0-9	490
+10-19	512
+20-29	481
+30-39	505
+40-49	512
+50-59	506
+60-69	473
+70-79	514
+80-89	524
+90-100	483
+to conclude, according to the histogram we can confirm thet the grads are continuous uniform distribution.
