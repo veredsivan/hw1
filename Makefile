@@ -7,7 +7,7 @@ RM=rm -rf
 
 
 libgrades.so: grades.o
- $(CCLINK) -shared grades.o -o libgrades.so -llinked-list -L 
+	$(CCLINK) -shared grades.o -o libgrades.so -llinked-list -L 
 
 grades.o: grades.h grades.c linked-list.h
 	$(CC) $(CFLAGS) -c -fpic grades.c
