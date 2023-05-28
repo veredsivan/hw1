@@ -175,41 +175,64 @@ int grades_add_grade(struct grades *grades, const char *name, int id, int grade)
     return ERROR;
 }
 
-float grades_calc_avg(struct grades *grades, int id, char **out) {
-    if (!grades || !out) {
+
+float grades_calc_avg(struct grades *grades, int id, char **out) {  
+
+    float sum = 0.0;
+    if (grades==NULL) 
+    {
+        *out = NULL;
         return ERROR;
     }
-    int num_courses = 0;
-    struct iterator *it_student = list_begin(grades->individual_student);
-    struct student *current_student = (struct student *)list_get(it_student);
-    while ((current_student!=NULL) &&
-         current_student->student_ID !=id ) {
-        if (current_student->student_ID == id) {
-            break;
-            }
+    if (out==NULL)
+        return ERROR;
+
+    struct iterator* it_student = list_begin(grades->individual_student);
+    struct student* my_student =(struct student*)list_get(it_student);
+    while((my_student->student_ID != id) && (my_student != NULL)) 
+        //continue scanning if yet found the relevant ID or NULL
+    {
+        if(!my_student) 
+        {
+            *out = NULL;
+            return ERROR;
+        }   
         it_student = list_next(it_student);
-        current_student = list_get(it_student);
+        my_student = list_get(it_student);
     }
-    float total_grade = 0.0;
-    struct iterator *it_course = list_begin(current_student->individual_course);
-    struct course *current_course = (struct course *)list_get(it_course);
-    while (current_course) {
-        total_grade += current_course->grade;
-        it_course = list_next(it_course);
-        current_course = list_get(it_course);
-    }
-    float avg_grade = total_grade / num_courses;
-    char* student_calc_name = 
-        (char *)malloc(strlen(current_student->name) + 1);
-    if (student_calc_name == NULL) {
-        *out=NULL;
+    char* copy_name=(char*)malloc(strlen(my_student->name)+1);
+    if (!copy_name)
+    {
+        *out = NULL;
         return ERROR;
     }
-    strcpy(student_calc_name, current_student->name);
-    *out = student_calc_name;
-    return avg_grade;
-return ERROR;
+    strcpy(copy_name, my_student->name);
+    *out = copy_name;
+    //free(copy_name); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    struct iterator* it_course = list_begin(my_student->individual_course);
+    struct course* my_course= (struct course*)list_get(it_course);
+    int num_courses = 0;
+    while(!my_course) 
+        //continue scanning if yet found the relevant ID or NULL
+    {
+        float my_grade = (float)(my_course->grade);
+        if((my_grade<0) || (my_grade>100)) {
+            out = NULL;
+            return ERROR;
+        }
+        sum += my_grade;
+        it_course= list_next(it_course);
+        my_course = list_get(it_course);
+        num_courses++;
+    }
+    if (num_courses==0)
+        return 0;
+    return (sum/num_courses);
+
 }
+
+
 
 int grades_print_student(struct grades *grades, int id) {
     if (!grades) {
