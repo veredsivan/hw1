@@ -70,6 +70,9 @@ public:
      */
     String trim() const;
 
+
+
+
 };
 
 

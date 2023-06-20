@@ -21,7 +21,7 @@
 bool sep_command_field_port(String command, String **output, size_t *size)
 {
     String *pre_trim;
-    char *delimiter = "=";
+    char delimiter[] = "=";
     command.split(delimiter, &pre_trim, size);
     if (*size != NUM_EQ_PARTS)
     {
@@ -50,7 +50,7 @@ public:
 //parse packet string
 bool sep_packet_field_port(String packet, String** output, size_t *size)
 {
-    char* delimiters = "=,";
+    char delimiters[] = "=,";
     String *pre_trim;
     packet.split(delimiters, &pre_trim, size);
     if (*size != NUM_PACKET_FIELDS) //check for valid packet struct
@@ -109,15 +109,15 @@ PortField::PortField(String command)
 bool PortField::set_value(String value)
 {
     String *sep_by_hyphen;
-    size_t *size_hyphen;
+    size_t size_hyphen;
     int port_limiter;
-    value.split(HYPHEN_SYMBOL, &sep_by_hyphen, size_hyphen);
-    if(*size_hyphen != PORT_FIELDS)
+    value.split("-", &sep_by_hyphen, &size_hyphen);
+    if(size_hyphen != PORT_FIELDS)
     {
         delete[] sep_by_hyphen;
         return FALSE;
     }
-    for (size_t i=0; i < *size_hyphen; i++)
+    for (size_t i=0; i < size_hyphen; i++)
     {
         port_limiter = sep_by_hyphen[i].to_integer();
         if ((port_limiter < 0) || (port_limiter > 65535))

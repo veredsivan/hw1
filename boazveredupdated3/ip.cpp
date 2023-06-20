@@ -1,8 +1,8 @@
 //#include "string.h"
 #include "ip.h"
-#define SLASH_SYMBOL "/"
-#define DOT_SYMBOL "."
-#define EQUALL_SYMBOL "="
+#define SLASH_SYMBOL '/'
+#define DOT_SYMBOL '.'
+#define EQUALL_SYMBOL '='
 #define FALSE 1
 #define TRUE 0
 #define IP_SLOTS 4
@@ -16,27 +16,34 @@
 #define EIGHT_BIT_SHIFT 8
 
 
+using namespace std;
+
+/**
 //parse command string
-bool sep_command_field(String command, String **output, size_t *size)
+static bool sep_command_field(String command, String **output, size_t *size)
 {
     String *pre_trim;
-    char *delimiter = "=";
+    const char *delimiter = "=";
     command.split(delimiter, &pre_trim, size);
+    command.split(delimiter, output, size);
     if (*size != NUM_EQ_PARTS)
     {
         delete[] pre_trim;
         return FALSE;
     }
-
-    for (size_t i=0; i < *size; i++)
+    *output = new String[NUM_EQ_PARTS];
+    for (size_t i = 0; i < *size; i++)
     {
-        *output[i] = pre_trim[i].trim();
+    	cout << "i = " << i << endl;
+    	String tmp = pre_trim[i].trim();
+        *output[i] = tmp;
+        output[i].trim();
     }
     delete[] pre_trim;
     return TRUE;
 
 }
-
+**/
 /**
 class GenericField {
 public:
@@ -46,11 +53,11 @@ public:
     virtual ~GenericField() {}
 };
 **/
-
+/**
 //parse packet string
 bool sep_packet_field(String packet, String** output, size_t *size)
 {
-    char* delimiters = "=,";
+    const char* delimiters = "=,";
     String *pre_trim;
     packet.split(delimiters, &pre_trim, size);
     if (*size != NUM_PACKET_FIELDS) //check for valid packet struct
@@ -66,13 +73,13 @@ bool sep_packet_field(String packet, String** output, size_t *size)
     delete[] pre_trim;
     return TRUE;
 }
-
+**/
 //transfer each slot of ip to int number
 bool ip_to_int(String IP, int *IP_int)
 {
     size_t size;
     String *ip_arr;
-    char *delimiter = DOT_SYMBOL;
+    char delimiter[] = ".";
     String ip_con;
     IP.split(delimiter, &ip_arr, &size);
     if (size != IP_SLOTS)
@@ -117,19 +124,34 @@ class IPField : public GenericField {
 
 IPField::IPField(String command) 
 	{
-		String *command_fields;
-		size_t fields_size;
-		String target;
-		sep_command_field(command, &command_fields, &fields_size);
-		if (fields_size != NUM_EQ_PARTS)
-		{
-			delete[] command_fields;
-			return;
-		}
-		//set value and target of element
-		this->target = command_fields[TARGET_PART];
-		this->value = command_fields[IP_PART];
-		delete[] command_fields;
+	size_t size;
+	String target;
+	String *command_fields = new String[NUM_EQ_PARTS];
+	String *pre_trim ;
+    const char *delimiter = "=";
+    command.split(delimiter, &pre_trim, &size);
+    if (size != NUM_EQ_PARTS)
+    {
+        delete[] pre_trim;
+        delete[] command_fields;
+    }
+    //*output = new String[NUM_EQ_PARTS];
+    for (size_t i = 0; i < size; i++)
+    {
+    	//cout << "i = " << i << endl;
+    	command_fields[i] = pre_trim[i].trim();
+         
+        //*output[i].trim();
+    }
+    
+
+	//set value and target of element
+	this->target = command_fields[TARGET_PART];
+	this->value = command_fields[IP_PART];
+	//this->target(command_fields[TARGET_PART]);
+	//this->value(command_fields[IP_PART]);
+	delete[] command_fields;
+	delete[] pre_trim; 
 	}
 /**
 //sestructor implemntation
@@ -142,18 +164,18 @@ bool IPField::set_value(String value)
 	{
 		String *sep_by_slash;
 		String *sep_by_dot;
-		size_t *size_slash;
-		size_t *size_dot;
-		value.split(SLASH_SYMBOL, &sep_by_slash, size_slash);
-		sep_by_slash[0].split(DOT_SYMBOL, &sep_by_dot,size_dot);
-		if(*size_dot!=NUM_EQ_PARTS)
+		size_t size_slash;
+		size_t size_dot;
+		value.split("/", &sep_by_slash, &size_slash);
+		sep_by_slash[0].split(".", &sep_by_dot,&size_dot);
+		if(size_dot!=NUM_EQ_PARTS)
 		{
 			delete[] sep_by_slash;
 			delete[] sep_by_dot;
 			return FALSE;
 		}
 		int ip_num;
-		for (size_t i=0; i < *size_dot; i++)
+		for (size_t i=0; i < size_dot; i++)
 		{
 			ip_num = sep_by_dot[i].to_integer();
 			if ((ip_num < 0) || (ip_num > 255))
@@ -184,36 +206,65 @@ bool IPField::set_value(String value)
 
 bool IPField::match(String packet)
 	{
-	String* packet_fields;
-	size_t num_fields;
-	int packet_ip;
-	int masked_packet_ip;
+	String *packet_fields = new String[NUM_PACKET_FIELDS];
+	String *pre_trim ;
+	
+	int packet_ip = 0;
+	int masked_packet_ip = 0;
+
+	size_t size;
+	const char* delimiters = "=,";
+    
+    
 	//send the IP part to set value
 	if (!(this->set_value(this->value)))
 	{
+		delete[] pre_trim;
 		delete[] packet_fields;
 		return FALSE;
 	}
 
 	//divide packet into arr of phrases
-	sep_packet_field(packet, &packet_fields, &num_fields);
-	for (size_t i=0; i < num_fields; i++)
+	//sep_packet_field(packet, &packet_fields, &num_fields);
+
+	packet.split(delimiters, &pre_trim, &size);
+    if (size != NUM_PACKET_FIELDS) //check for valid packet struct
+    {
+		delete[] packet_fields;
+    	delete[] pre_trim;
+        return FALSE;
+    }
+
+    for (size_t i=0; i < size; i++) //remove spaces from each field
+    {
+        packet_fields[i] = pre_trim[i].trim();
+    }
+    
+
+
+	for (size_t i=0; i < size; i++)
 		if((packet_fields[i].equals(this->target)))
 		{
-			ip_to_int(packet_fields[i+1],	&packet_ip);
+			ip_to_int(packet_fields[i+1], &packet_ip);
 			masked_packet_ip = packet_ip<<mask;
+			cout << "IP_value is:" << (this->IP_value) << endl;
+			//cout << "masked_packet is:" << masked_packet_ip << endl;
 			if (masked_packet_ip == this->IP_value)
 			{
 				delete[] packet_fields;
+				delete[] pre_trim;
 				return TRUE;
 			}
 			delete[] packet_fields;
+			delete[] pre_trim;
 			return FALSE;
 		}
 	delete[] packet_fields;	
+	delete[] pre_trim;
 	return FALSE;
 
 	}
 
 
 
+IPField::IPField() : mask(0),  IP_value(0) {}

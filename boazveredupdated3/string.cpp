@@ -47,6 +47,9 @@
      * @brief Changes this from String
      */
     String& String::operator=(const String &rhs){
+    /**    if (this == rhs) {
+            return *this;
+        }*/
         delete[] this->data;
         //may be replaced by constructor
         this->length = rhs.length;
@@ -160,7 +163,7 @@ void String::split(const char* delimiters, String** output, size_t* size) const 
             }
             j++;
         }
-        /**
+        
         *size = (size_t)count; //enter size the length of arr
         *output = new String[count];
         while (token != NULL) {
