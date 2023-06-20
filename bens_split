@@ -1,0 +1,42 @@
+
+void String::split(const char* delimiters, String** output, size_t* size) const {
+    if (delimiters == NULL || this->data == NULL) {
+        return;
+    }
+
+    int substrings_num = 1;//Number of substrings
+    int num_delimiters;//Number of delimiters
+    int len = length;
+    char clone[len + 1];
+    strcpy(clone, data);
+    num_delimiters = strlen(delimiters);
+
+    for (int i = 0; i < len; i++) {//Count the number of substrings
+        for (int j = 0; j < num_delimiters; j++) {//Count the number of delimiters
+            if (clone[i] == delimiters[j]) {
+                clone[i] = END_STRING;//Replace the delimiter with '\0'
+                if ((i > 0) && (clone[i - 1] != END_STRING) && (i < (len - 1))) {
+                    substrings_num++;
+                }
+            }
+        }
+    }
+    //return the size even if output is NULL
+    *size = substrings_num;
+    if (output == NULL) {
+        return;
+    }
+    *output = new String[substrings_num];//Allocate memory for output
+    int start = 0;
+    int i_substring = 0;
+    for (int i = 1; i < len + 1; i++) {
+        //If the current char is '\0' and the previous char is not '\0'
+        if (clone[i] == END_STRING && clone[i - 1] != END_STRING) {
+            //Copy the substring to the output
+            (*output)[i_substring] = String(&clone[start]);
+            i_substring++;
+            start = i + 1;
+        }
+    }
+    return;
+}
