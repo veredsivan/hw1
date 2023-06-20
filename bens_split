@@ -1,4 +1,27 @@
+String String::trim() const{
+	int start = 0;
+	int end = length - 1;
 
+	while (data[start] == SPACE) {
+		start++;
+	}
+
+	while (data[end] == SPACE) {
+		if (end == start) {
+			return String(); // spaces string
+		}
+		end--;
+	}
+	end++;
+	
+	char trim_string[end-start+1];//Allocate memory for the trimmed string
+	strncpy(trim_string,&data[start],end-start);//Copy the trimmed string
+	trim_string[end-start]=END_STRING;
+	//trim_string = allocate_and_copy(&data[start],end-start);
+	String new_trim_string = String(trim_string);
+	return new_trim_string;
+	
+}
 void String::split(const char* delimiters, String** output, size_t* size) const {
     if (delimiters == NULL || this->data == NULL) {
         return;
