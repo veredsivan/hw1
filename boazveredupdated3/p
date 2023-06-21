@@ -6,15 +6,19 @@ fixed_rules=$(sed -e 's/ //g' -e '/^$/d' -e 's/#.*//' -e 's/^,+//' -e 's/,+$//' 
 
 output=''
 
-for packet in $packets; do
+IFS=$'\n' packet_array=($packets) # Split packets into an array
+
+for packet in "${packet_array[@]}"; do
   flag=0
 
-  for line in $fixed_rules; do
+  IFS=$'\n' read -rd '' -a rule_array <<< "$fixed_rules"
+
+  for line in "${rule_array[@]}"; do
     all_valid="$packet"
 
-    IFS=',' read -ra rule_array <<< "$line"
+    IFS=',' read -ra rule_parts <<< "$line"
 
-    for rule in "${rule_array[@]}"; do
+    for rule in "${rule_parts[@]}"; do
       all_valid=$(echo "$all_valid" | ./firewall.exe "$rule")
     done
 
