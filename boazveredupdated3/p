@@ -1,0 +1,35 @@
+#!/bin/bash
+
+rules_file="$1"
+packets=$(cat)
+fixed_rules=$(sed -e 's/ //g' -e '/^$/d' -e 's/#.*//' -e 's/^,+//' -e 's/,+$//' -e 's/,+/,/g' "$rules_file" | grep -v '^$')
+
+output=''
+
+for packet in $packets; do
+  flag=0
+
+  for line in $fixed_rules; do
+    all_valid="$packet"
+
+    IFS=',' read -ra rule_array <<< "$line"
+
+    for rule in "${rule_array[@]}"; do
+      all_valid=$(echo "$all_valid" | ./firewall.exe "$rule")
+    done
+
+    if [[ "$packet" == "$all_valid" ]]; then
+      output+="\n$packet" # Add the packet that matches the rule to the output
+      flag=1
+      break # Move to the next packet
+    fi
+  done
+
+  if [[ $flag -eq 1 ]]; then
+    break # Rule successful, move to the next packet
+  fi
+done
+
+output=$(echo -e "$output" | grep -v '^$' | tr -d ' ' | sort -u)
+
+echo -e "$output"
