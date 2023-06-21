@@ -5,33 +5,16 @@ packets=$(cat)
 fixed_rules=$(sed -e 's/ //g' -e '/^$/d' -e 's/#.*//' -e 's/^,+//' -e 's/,+$//' -e 's/,+/,/g' "$rules_file" | grep -v '^$')
 output=''
 
-IFS=$'\n' packet_array=($packets) # Split packets into an array
+while IFS= read -r line; do
+  all_valid="$packets"
+  IFS=',' read -ra rule_array <<< "$line"
 
-for packet in "${packet_array[@]}"; do
-  flag=0
-
-  IFS=$'\n' read -rd '' -a rule_array <<< "$fixed_rules"
-
-  for line in "${rule_array[@]}"; do
-    all_valid="$packet"
-
-    IFS=',' read -ra rule_parts <<< "$line"
-
-    for rule in "${rule_parts[@]}"; do
-      all_valid=$(echo "$all_valid" | ./firewall.exe "$rule")
-    done
-
-    if [[ "$packet" == "$all_valid" ]]; then
-      output+="\n$packet" # Add the packet that matches the rule to the output
-      flag=1
-    fi
+  for rule in "${rule_array[@]}"; do
+    all_valid=$(echo "$all_valid" | ./firewall.exe "$rule")
   done
 
-  if [[ $flag -eq 0 ]]; then
-    output+="\n$packet" # Add the packet as is if it doesn't match any rule
-  fi
-done
+  output+="\n$all_valid"
+done <<< "$fixed_rules"
 
-output=$(echo -e "$output" | grep -v '^$' | tr -d ' ' | sort -u)
-
+output=$(echo -e "$output" | grep -v '^$' | tr -d ' ' | sort -u | sed '1{/^ *$/d}')
 echo -e "$output"
