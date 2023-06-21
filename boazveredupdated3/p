@@ -2,7 +2,7 @@
 
 rules_file="$1"
 packets=$(cat)
-fixed_rules=$(awk 'BEGIN { FS="[ \t#,]+" } /^[^#]/ { print $0 }' "$rules_file")
+fixed_rules=$(awk -F"[[:space:],#]+" '!/^ *$/ && !/^#/ { print $0 }' "$rules_file")
 
 output=''
 
@@ -11,7 +11,7 @@ while IFS= read -r line; do
   IFS=',' read -ra rule_array <<< "$line"
 
   for rule in "${rule_array[@]}"; do
-    all_valid=$(echo "$all_valid" | tr -d '[:space:]' | ./firewall.exe "$rule")
+    all_valid=$(echo "$all_valid" | ./firewall.exe "$rule")
   done
 
   output+="\n$all_valid"
